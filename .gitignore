@@ -1,0 +1,87 @@
+# Built kernel modules and objects
+*.ko
+*.ko.unsigned
+*.mod
+*.mod.c
+*.mod.o
+*.o
+*.o.cmd
+*.ko.cmd
+*.mod.o.cmd
+
+# Kernel build artifacts
+*.order
+*.symvers
+*.symversions
+*.cmd
+.tmp_versions/
+modules.builtin
+modules.builtin.modinfo
+Module.symvers
+Module.markers
+modules.order
+
+# Compilation database (generated, not source)
+compile_commands.json
+
+# Your binary executable (from lcg.c)
+lcg
+!lcg.c  # Keep the source file
+
+# Build directories
+*.d
+*.dwo
+*.dSYM/
+*.gcno
+*.gcda
+
+# Editor backup files
+*~
+*.swp
+*.swo
+*.swn
+*.bak
+*.backup
+*.orig
+*.rej
+
+# IDE files
+.vscode/
+.idea/
+*.code-workspace
+.cproject
+.project
+.settings/
+.clangd/
+.cache/
+
+# Version control
+*.orig
+*.rej
+*.patch
+
+# Debug symbols and profiling
+*.gdb
+*.gdb_history
+vgcore.*
+*.prof
+*.gcov
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.out
+*_release/
+*_debug/
+
+# Kernel development specific
+cscope.*
+ncscope.*
+tags
+TAGS
+GPATH
+GRTAGS
+GTAGS
+ID
+.superbuild/
