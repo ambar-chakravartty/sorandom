@@ -1,22 +1,44 @@
 #include <linux/module.h>
 #include <linux/fs.h>
 #include <linux/sched.h>
+#include <linux/crypto.h>
+#include <crypto/rng.h>
 
 #define DEVICE_NAME "sorandom"
 #define RAND_MAX ((1U << 31) - 1)
+#define CIPHER_ALGO "drbg_nopr_hmac_sha512"
 
-static int seed_val = 0;
-static int new_random_number(void) {
-  return seed_val = (seed_val * 1103515245 + 12345) & RAND_MAX;;
+static struct crypto_rng *rng = NULL;
+ 
+static int new_random_number(int* res) {
+  int ret;
+  ret = crypto_rng_get_bytes(rng,(u8*)res,sizeof(int));
+  return ret;
 }
 
 static int sorandom_open(struct inode *inode, struct file *filp) {
-  pr_info("sorandom: open for randomness\n");
+  u8 seed[32];
+  int ret;
+  
+  rng = crypto_alloc_rng(CIPHER_ALGO, 0, 0);
+  if (IS_ERR(rng)) {
+    pr_alert("sorandom: Failed to allocated cipher handle\n");
+    return PTR_ERR(rng);
+  }
+
+  get_random_bytes(seed, sizeof(seed));
+  ret = crypto_rng_reset(rng,seed,sizeof(seed));
+  if (ret) {
+    pr_info("sorandom: Failed to seed RNF: %d\n", ret);
+    return ret;
+  }
+  //pr_info("sorandom: open for randomness\n");
   return 0;
 }
 
 static int sorandom_close(struct inode *inode, struct file *filp) {
-  pr_info("sorandom: closing\n");
+  crypto_free_rng(rng);
+  //pr_info("sorandom: closing\n");
   return 0;
 }
 
@@ -29,7 +51,12 @@ static ssize_t sorandom_read(struct file *filp, char __user *buf, size_t count, 
     return 0;
   }
 
-  int randnum = new_random_number();
+  int randnum = 0;
+  if (new_random_number(&randnum) != 0) {
+    pr_info("sorandom: Error generating new random number\n");
+    return -EIO;
+  }
+  
   if (copy_to_user(buf, &randnum, sizeof(int)) != 0) {
     return -EFAULT;
   }
